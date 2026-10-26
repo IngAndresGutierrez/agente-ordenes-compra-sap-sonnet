@@ -115,6 +115,11 @@ app.post("/api/reiniciar", async (c) => {
   return c.json({ ok: true })
 })
 
+// Sin caché para el front: tras cada despliegue el navegador debe pedir el HTML, CSS y JS nuevos.
+app.use("/*", async (c, next) => {
+  await next()
+  if (!c.req.path.startsWith("/api/")) c.header("cache-control", "no-cache, must-revalidate")
+})
 app.use("/*", serveStatic({ root: "./web" }))
 
 serve({ fetch: app.fetch, port: config.port }, (info) => {
