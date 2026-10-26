@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Órdenes de compra</title>
+  <meta name="description" content="Agente que valida solicitudes de compra contra los maestros y crea la OC en SAP simulado.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,700;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="barra">
+    <div class="marca">
+      <h1>Órdenes de compra</h1>
+      <p id="estado-modelo" class="sutil">Conectando…</p>
+    </div>
+    <button id="reiniciar" class="btn-texto" type="button">Reiniciar demo</button>
+  </header>
+
+  <nav class="casos" aria-label="Solicitudes en la bandeja">
+    <p class="sutil">Bandeja de solicitudes: elige una para procesarla</p>
+    <ul id="lista-casos"></ul>
+  </nav>
+
+  <main class="mesa">
+    <section class="conversacion" aria-label="Conversación con el agente">
+      <ol id="mensajes" aria-live="polite"></ol>
+      <div id="pensando" class="pensando" hidden>Revisando la solicitud<span>.</span><span>.</span><span>.</span></div>
+      <form id="form" class="entrada">
+        <label for="texto" class="sr">Mensaje para el agente</label>
+        <textarea id="texto" rows="2" placeholder='Ej.: Procesa la solicitud "sol-004" y no la crees hasta que yo confirme.' required></textarea>
+        <button id="enviar" type="submit">Enviar</button>
+      </form>
+    </section>
+
+    <aside class="orden" aria-label="Orden de compra en revisión">
+      <div id="hoja" class="hoja vacia">
+        <p class="vacia-texto">Aquí aparece la orden en revisión: los datos como quedarían en SAP, los diez controles y el resultado.</p>
+      </div>
+      <div class="archivos">
+        <h2>Registros de control</h2>
+        <ul>
+          <li><a href="#" data-ruta="out/control.csv">control.csv</a> — cada intento de crear OC</li>
+          <li><a href="#" data-ruta="out/sap/ordenes.jsonl">ordenes.jsonl</a> — OC creadas en SAP simulado</li>
+          <li><a href="#" data-ruta="out/log.jsonl">log.jsonl</a> — cada llamada a herramienta</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>
