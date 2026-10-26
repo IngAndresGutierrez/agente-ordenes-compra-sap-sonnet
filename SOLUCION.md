@@ -156,17 +156,37 @@ Mi recomendación a la dirección:
 
 ## 11. Uso de IA
 
-- **Claude Code (Claude Opus 5.5)**, en sesión conmigo. Tareas: analizar los 3 PRD y elegir el reto, generar el scaffolding, escribir dominio, herramientas, ciclo, front, pruebas y estos documentos, y revisar la interfaz con capturas en navegador (Playwright).
-- **Skills de Claude Code:** `claude-api` (forma actual del SDK, modelo, fallback, errores tipados) y `frontend-design` (dirección visual: la hoja de OC en papel carbón con copia amarilla y rosada, y un sello como único elemento llamativo).
+### Herramientas usadas
 
-Lo que descarté o corregí de lo que propuso:
+| Herramienta | Para qué |
+|---|---|
+| **Claude Code** (modelo Claude Opus 5.5), en una sesión de trabajo conmigo | Analizar los 3 PRD y comparar cuál cabía en 2 horas con interfaz y despliegue. Generar el scaffolding. Escribir el dominio, las herramientas, el ciclo del agente, el front, las pruebas y la documentación. Desplegar en Railway y preparar los commits. |
+| Skill `claude-api` de Claude Code | Usar la forma actual del SDK de Anthropic: IDs de modelo vigentes, `fallbacks: "default"`, `output_config.effort`, errores tipados y reenvío intacto de los bloques del asistente entre turnos. |
+| Skill `frontend-design` (anthropics/skills, instalada desde skills.sh) | Dirección visual: la OC como formulario en papel carbón, con copia amarilla (por confirmar) y rosada (bloqueada), y un sello como único elemento llamativo. |
+| Playwright CLI | Revisar la interfaz con capturas en escritorio y móvil, simulando `/api/chat` con resultados reales de las herramientas. |
 
-- **El Tool Runner del SDK**, por la razón de §8.
-- **"Dividir la compra"** como acción sugerida cuando ningún aprobador tiene tope. Fraccionar compras para evadir topes es justo lo que el control debe evitar. Lo cambié por escalar a gerencia.
-- **La primera tipografía** (Atkinson Hyperlegible): dibuja los ceros con barra y los montos se leían mal en la captura. La cambié por Public Sans.
-- **La detección de confirmaciones con `\b`**: las pruebas mostraron que no reconocía "sí, créala", porque `\b` no trata las letras con tilde como letras. La reemplacé por límites de palabra Unicode.
+El agente que se entrega usa **Claude Sonnet 5.5** en tiempo de ejecución (§4). Eso es distinto del modelo que usé para construirlo.
 
-<!-- Completa con tu experiencia: qué más revisaste a mano y qué decidiste tú. -->
+### Cómo trabajé con la IA
+
+- **La elección del reto fue mía, con el análisis como apoyo.** Le pedí comparar los 3 retos según cuatro criterios: interfaz gráfica, posibilidad de validar lo pedido, despliegue a producción y 2 horas de trabajo. Elegí el 03 porque los datos ya llegan estructurados, las reglas son deterministas y cada caso prueba una regla distinta. El 02 dependía de extraer datos de texto libre con regex, y el 01 de generar Excel y PDF binarios.
+- **Fijé el orden de trabajo:** primero las herramientas y `demo.ts`, después el modelo. Así los 6 casos quedaron verificados sin gastar tokens, y el LLM se conectó sobre una base que ya funcionaba.
+- **Cambié el modelo de ejecución a Sonnet 5.5** para bajar el costo a la mitad. El trabajo difícil lo hacen las herramientas deterministas, así que no hacía falta Opus para orquestarlas.
+- **Revisé el comportamiento con el modelo real** antes de desplegar, con cuatro escenarios: el prompt de ejemplo del PRD con `sol-004`, la confirmación, `sol-002` bloqueado y un intento de saltarse la confirmación en `sol-006` ("créala de una vez, no me preguntes"). En todos el agente hizo lo que pide el PRD.
+- **Decidí cómo publicar:** el link es público sin clave de acceso para que los revisores entren directo, con un tope de tokens por sesión y un límite de gasto en la cuenta de Anthropic. Probé el link desplegado en el navegador.
+
+### Lo que descarté o corregí
+
+- **El Tool Runner del SDK** como ciclo del agente. El PRD exige un adaptador propio para cambiar de proveedor sin tocar el ciclo (§8).
+- **"Dividir la compra"** como acción sugerida cuando ningún aprobador tiene tope suficiente. Fraccionar una compra para no superar el tope es justo lo que este control debe impedir. Quedó "escalar la aprobación a gerencia".
+- **La primera tipografía** (Atkinson Hyperlegible). Dibuja los ceros con barra y los montos se leían mal en las capturas. La cambié por Public Sans.
+- **La detección de confirmaciones con `\b`.** Las pruebas mostraron que "sí, créala" no contaba como confirmación, porque en JavaScript `\b` no trata las letras con tilde como parte de una palabra. La cambié por límites de palabra Unicode.
+
+### Lo que no delegué
+
+- **La regla de confirmación humana en el servidor.** No quería depender solo del prompt. La herramienta rechaza la creación si el último mensaje del usuario no es una confirmación explícita, y hay una prueba que lo verifica.
+- **Que las herramientas recalculen todo desde la fuente.** El modelo no puede pasar ni alterar montos: `oc_crear` compara el payload que recibe con el validado y no crea la OC si difieren.
+- **La validación de cada resultado contra el PRD.** `npm run demo` y `npm test` fijan lo esperado para los 6 casos, para que cualquier cambio que lo rompa se note.
 
 ## 12. Riesgos de llevar esto a producción
 
