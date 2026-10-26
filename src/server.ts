@@ -9,6 +9,7 @@ import { z } from "zod"
 import { nuevaSesion, turno, type Sesion } from "./agent/ciclo.ts"
 import { AnthropicAdapter } from "./llm/anthropic.ts"
 import { leerPaquete, listarCasos } from "./oc/fuentes.ts"
+import { leerControl, resumirControl } from "./oc/registro.ts"
 
 const ROOT = process.cwd()
 const env = (k: string, d: string) => process.env[k] || d
@@ -57,6 +58,9 @@ app.get("/api/casos", async (c) => {
   )
   return c.json({ casos })
 })
+
+// Resumen del log de control (out/control.csv) para la bandeja y los contadores de auditoría.
+app.get("/api/control", async (c) => c.json(resumirControl(await leerControl(ROOT))))
 
 const ChatBody = z.object({ sessionId: z.string().min(1).max(100).optional(), message: z.string().trim().min(1).max(4000) })
 

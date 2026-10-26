@@ -7,6 +7,7 @@ import { esConfirmacion, nuevaSesion, turno } from "../src/agent/ciclo.ts"
 import type { LlmAdapter, Mensaje, Respuesta } from "../src/llm/adapter.ts"
 import { validar } from "../src/oc/controles.ts"
 import { leerMaestros, leerPaquete } from "../src/oc/fuentes.ts"
+import { leerControl, resumirControl } from "../src/oc/registro.ts"
 import { ejecutar } from "../src/tools/registro.ts"
 
 let root: string
@@ -63,6 +64,15 @@ describe("herramientas", () => {
     const r = await ejecutar("oc_crear", { caso: "sol-006", confirmado: true, payload: orden }, ctx())
     assert.equal(r.ok, false)
     assert.match(r.resumen, /no coincide/)
+  })
+  test("el resumen de control cuenta una OC por solicitud aunque se repita el intento", async () => {
+    await ejecutar("oc_crear", { caso: "sol-002" }, ctx())
+    const r = resumirControl(await leerControl(root))
+    assert.equal(r.porSolicitud["SOL-2026-001"].resultado, "creada")
+    assert.equal(r.porSolicitud["SOL-2026-002"].resultado, "bloqueada")
+    assert.deepEqual(r.porSolicitud["SOL-2026-002"].bloqueos, ["RC1"])
+    assert.equal(r.totales.creadas, 1)
+    assert.equal(r.totales.bloqueadas, 1)
   })
   test("caso inexistente y argumentos inválidos no lanzan", async () => {
     assert.equal((await ejecutar("oc_leer_paquete", { caso: "sol-999" }, ctx())).ok, false)
